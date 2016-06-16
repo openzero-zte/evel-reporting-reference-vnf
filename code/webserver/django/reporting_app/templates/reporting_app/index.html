@@ -1,0 +1,45 @@
+{% load staticfiles %}
+
+<!-- Use the stylesheets from the admin app for now so that we get common   -->
+<!-- look-and-feel.                                                         -->
+<link rel="stylesheet" type="text/css"
+      href="{% static 'admin/css/base.css' %}" />
+<link rel="stylesheet" type="text/css"
+      href="{% static 'admin/css/dashboard.css' %}" />
+
+<div id="header">
+  <div id="branding">
+    <h1><a href="{% url "index" %}">{{ title }}</a></h1>
+  </div>
+</div>
+
+<div id="content">
+  <p>This application lets you define events which can then be generated in
+     specified patterns and sent to a collector function.</p>
+
+  <p>The normal workflow is to first use the administration functions to define
+  the <em>Faults</em> and the <em>Measurements</em> and then use the individual
+  task-management pages to generate events which match those definitions.</p>
+
+
+
+  <b>Manage</b>
+    <ul>
+        <a href="{% url 'admin:index' %}">Event definitions
+        <br>
+        <a href="{% url 'lifecycle' %}">VNF Lifecycle</a>
+        <br>
+        <a href="{% url 'clear_event_counter' %}">Clear the Event counter</a>
+    </ul>
+
+   <b>Generate events</b>
+    <ul>
+       <a href="{% url 'faults' %}">Fault</a>
+       <br>
+       <a href="{% url 'measurements' %}">Measurement</a>
+       <br>
+       <a href="{% url 'mobile_flow' %}">Mobile Flow</a>
+       <br>
+        <a href="{% url 'syslog' %}">Syslog</a>
+    </ul>
+</div>

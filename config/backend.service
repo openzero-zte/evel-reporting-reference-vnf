@@ -1,0 +1,17 @@
+#------------------------------------------------------------------------------
+# AT&T Reporting Reference VNF - systemd service definition
+#------------------------------------------------------------------------------
+
+[Unit]
+Description=AT&T Reporting Example VNF - backend server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python /opt/att/backend/backend.py \
+                          --config /etc/opt/att/backend.conf \
+                          --verbose
+Restart=always
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

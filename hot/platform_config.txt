@@ -1,0 +1,66 @@
+This is a set of notes describing what got added to the platform so we can
+recreate if necessary.
+
+Prerequisites
+-------------
+yum update
+yum install wget
+yum install gcc
+yum install openssl-devel
+yum install epel-release
+yum install python-pip
+
+Django
+------
+pip install django
+
+Apache
+------
+yum install httpd httpd-devel
+
+mod_python
+----------
+yum install python-devel
+wget http://dist.modpython.org/dist/mod_python-3.4.1.tgz
+tar xvf mod_python-3.4.1.tgz
+./configure
+make
+
+# Edit .../dist/version.sh to remove the dependency on Git as described at
+# http://stackoverflow.com/questions/20022952/fatal-not-a-git-repository-when-installing-mod-python
+
+sudo make install
+make test
+
+
+mod_wsgi
+--------
+yum install mod_wsgi
+
+website
+-------
+Create /opt/att/website
+Copy files in - see Makefile targets
+Create database
+
+# Change security context for database
+chcon -t httpd_sys_content_t db.sqlite3
+chcon -t httpd_sys_content_t .
+setsebool -P httpd_unified 1
+setsebool -P httpd_can_network_connect=1
+
+# Gather static files
+python manage.py collectstatic
+
+# Get jsonschema
+pip install jsonschema
+
+daemonise service
+-----------------
+
+Put backend.service into /etc/systemd/system
+systemctl daemon-reload
+systemctl start backend
+systemctl status backend
+systemctl enable backend
+

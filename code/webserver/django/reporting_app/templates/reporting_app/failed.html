@@ -1,0 +1,19 @@
+{% load staticfiles %}
+
+<!-- Use the stylesheets from the admin app for now so that we get common   -->
+<!-- look-and-feel.                                                         -->
+<link rel="stylesheet" type="text/css"
+      href="{% static 'admin/css/base.css' %}" />
+<link rel="stylesheet" type="text/css" 
+      href="{% static 'admin/css/dashboard.css' %}" />
+
+<div id="header">
+  <div id="branding">
+    <h1><a href="{% url "index" %}">{{ title }}</a></h1>
+  </div>
+</div>
+
+<div id="content">
+  <p class="errors">Failed to post the event. Please refer to logs! 
+  <a href="..">Continue...</a>.</p>
+</div>

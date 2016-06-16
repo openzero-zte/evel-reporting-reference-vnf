@@ -1,0 +1,12 @@
+@startuml
+Title Vendor Event Listener Service - Reference VNF State Machine
+skinparam componentStyle uml2
+
+[*] --> Active
+Active --> PreparingToTerminate : Request Terminate signal
+PreparingToTerminate --> ReadyToTerminate : Dwell timer expires
+
+PreparingToTerminate --> Active : Activate signal
+ReadyToTerminate --> Active : Activate signal
+
+@enduml

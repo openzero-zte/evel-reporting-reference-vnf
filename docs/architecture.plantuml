@@ -1,0 +1,89 @@
+@startuml
+Title Vendor Event Listener Service - Reference VNF Environment
+skinparam componentStyle uml2
+
+cloud "OpenStack Cloud" {
+    node "Reference VNF" as vnf {
+      Component "Apache\nWeb Server" as httpd
+      Interface "HTTP" as http
+      http - httpd
+
+      Component "Web\nApplication" as web_app
+      httpd -> web_app : wsgi
+      Component "Backend Service" as backend
+      Interface "Command\nSocket" as cmd
+      cmd - backend
+    
+      Component "Task Thread" as thr_task
+      
+      Component "Notification Thread" as thr_notify
+      Interface "Notification\nQueue" as q_notify
+      q_notify - thr_notify
+
+      Component "Heartbeat Thread" as thr_heartbeat
+      
+      Database SQLite {
+        Component "Fault Defs" as faults
+        Component "Measurement Defs" as measurements
+        Component "Syslog Defs" as syslogs
+        Component "MobileFlow Defs" as mobileflows
+      }
+      web_app -> measurements 
+      web_app -> syslogs 
+      web_app -> mobileflows 
+      web_app -> faults : Django Data Model API
+    
+      web_app ..> cmd : JSON (TCP)
+      backend --> thr_task :  spawn
+      backend --> thr_heartbeat :  spawn
+      thr_task ..> q_notify : Inter-thread queues
+      thr_heartbeat ..> q_notify : Inter-thread queues
+      thr_heartbeat --> thr_heartbeat : timer
+    }
+  Component "OpenStack\nMetadata Service" as metadata_svc #LightGreen 
+  Interface "Metadata" as metadata #LightGreen 
+  metadata - metadata_svc
+  backend ..> metadata : JSON (HTTP)
+}
+
+package "AT&T Systems" as att {
+  Component "Vendor Event Service" as collector #LightGreen 
+  Interface "Vendor Event\nListener" as vel #LightGreen 
+  vel - collector
+  
+  Component "Orchestrator" as orchestrator #LightGreen 
+  orchestrator ..> vnf : Instantiates
+}
+
+thr_notify ..> vel : JSON/HTTPS
+
+Node "Test Harness" {
+  Component "Test Collector" as test_collector
+  Interface "Test Listener\nSocket" as test_vel
+  test_vel - test_collector
+  
+  Component "JSON Schema" as schema
+  test_collector - schema
+}
+
+thr_notify ..> test_vel : "JSON/HTTPS" 
+
+Actor "Test User" as tester #LightGreen 
+Component  "Test Client"  as test_client #LightGray
+Component "Web Browser" as browser #LightGreen 
+
+tester ..> browser
+tester ..> test_client
+browser ..> http : HTTP
+test_client ..> cmd : JSON (TCP)
+
+Note bottom of test_client
+Note that this does not form part
+of the deliverables, but is enabled
+by the use of a simple JSON over
+TCP interface into the backend 
+service.
+end note
+
+
+@enduml

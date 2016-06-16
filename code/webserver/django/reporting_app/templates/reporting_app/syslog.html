@@ -1,0 +1,44 @@
+{% load staticfiles %}
+
+<!-- Use the stylesheets from the admin app for now so that we get common   -->
+<!-- look-and-feel.                                                         -->
+<link rel="stylesheet" type="text/css"
+      href="{% static 'admin/css/base.css' %}" />
+<link rel="stylesheet" type="text/css"
+      href="{% static 'admin/css/dashboard.css' %}" />
+
+<div id="header">
+  <div id="branding">
+    <h1><a href="{% url "index" %}">{{ title }}</a></h1>
+  </div>
+</div>
+
+<div id="content">
+  <p>This page lets you choose one of your predefined <em>Syslog</em> and
+  then generate one or more of those events.</p>
+
+  <p>If you decide to generate more than one event they will be sent at the
+  rate which you define. The sending of the events is deferred to a "backend"
+  which means that you can set many separate jobs running at the same time.</p>
+
+  <p>If you set the rate as "0" then the data will be sent as fast as possible
+  - note that this may congest the backend, so you may start to disrupt the
+  requested rate of other running tasks.
+  </p>
+
+  <p>Events generated so far: {{ total_events }}</p>
+
+  <form action="." method="post">
+    {% csrf_token %}
+    <table>
+      {{ syslog_form }}
+    </table>
+    <input type="submit" value="Raise Syslog(s)" />
+  </form>
+</div>
+<div>
+  <br>
+  <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+     <b>Return to <a href="{% url "index" %}">the main page</a>.</b>
+  </p>
+</div>

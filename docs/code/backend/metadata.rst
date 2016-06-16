@@ -1,0 +1,3 @@
+OpenStack Metadata
+==================
+.. automodule:: metadata

@@ -1,0 +1,186 @@
+heat_template_version: 2013-05-23
+
+description: "AT&T Vendor Event Listener Example VNF"
+
+parameters:
+  function_code:
+    type: string
+    label: VF Name - Function Code
+    description: VF Function Code
+    constraints:
+      - allowed_pattern: "[a-z][a-z][a-z][a-z]"
+        description: VF Function code is four lowercase characters unique across AT&T.
+    default: rfvf
+
+  function_instance:
+    type: string
+    label: VF Name - Function Instance
+    description: VF Function Instance
+    constraints:
+      - allowed_pattern: "[0-9][0-9][0-9][0-9]"
+        description: Up to 10,000 instances supported.
+    default: "0001"
+    
+  vm_instance:
+    type: string
+    label: VF Name - VM Instance
+    description: VM Instance
+    constraints:
+      - allowed_pattern: "[0-9][0-9][0-9]"
+        description: Up to 1,000 VM instances supported.
+    default: "001"
+
+  component_name:
+    type: string
+    label: VF Name - Virtual Component
+    description: Virtual Component
+    constraints:
+      - allowed_pattern: "[a-z][a-z][a-z]"
+        description: Virtual Component code is three lowercase characters.
+    default: xxx
+
+  component_instance:
+    type: string
+    label: VF Name - Virtual Component Instance
+    description: Virtual Component Instance
+    constraints:
+      - allowed_pattern: "[0-9][0-9][0-9]"
+        description: Up to 1,000 Virtual Component instances supported.
+    default: "000"
+
+  bootimage:
+    type: string
+    label: Boot Image ID
+    description: Master bootimage image id
+    constraints:
+      - custom_constraint: glance.image
+        description: The boot image must be a valid Glance image.
+
+  key_name:
+    type: string
+    label: SSH Key
+    description: SSH key name
+    constraints:
+      - custom_constraint: nova.keypair
+        description: The specified key must be a valid key identifier.
+
+  mgmt_network:
+    type: string
+    label: Management Network
+    description: Management network id
+    constraints:
+      - custom_constraint: neutron.network
+        description: The management network must be a valid network ID.
+
+  mgmt_ip_address:
+    type: string
+    label: Management IP Address
+    description: IP of the created VM
+
+  vel_domain:
+    type: string
+    label: Vendor Event Listener host
+    description: The host (IP address or FQDN) where the Vendor Event Listener service is reached.
+    
+  vel_port:
+    type: number
+    label: Vendor Event Listener host port
+    description: The port where the Vendor Event Listener service is reached.
+    constraints:
+      - range: {min: 1, max: 65535}
+        description: The event listener must be on a valid TCP port between 1 and 65535.
+
+  vel_path:
+    type: string
+    label: Vendor Event Listener URL path prefix
+    description: The leading part of the path to the Vendor Event Listener service.
+    default: ""
+    
+  vel_topic_name:
+    type: string
+    label: Vendor Event Listener topic path
+    description: The trailing part of the path to the Vendor Event Listener service.
+    default: ""
+
+  vel_username:
+    type: string
+    label: Vendor Event Listener username
+    description: The username used to authenticate events to the Vendor Event Listener service.
+    default: ""
+
+  vel_password:
+    type: string
+    label: Vendor Event Listener password
+    description: The password used to authenticate events to the Vendor Event Listener service.
+    default: ""
+    hidden: true
+
+resources:
+
+  mgmt_port:
+    type: OS::Neutron::Port
+    properties:
+      name:
+        str_replace:
+          template: $FUNCTION_CODE$FUNC_ID$vm$VM_ID$COMPONENT_NAME$COMPONENT_ID-mgmt-port
+          params:
+            $FUNCTION_CODE: { get_param: function_code }
+            $FUNC_ID: { get_param: function_instance }
+            $vm: vm
+            $VM_ID: { get_param: vm_instance }
+            $COMPONENT_NAME: { get_param: component_name }
+            $COMPONENT_ID: { get_param: component_instance }
+      network_id: { get_param: mgmt_network }
+      fixed_ips:
+        - ip_address: { get_param: mgmt_ip_address }
+
+  boot_volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: 20
+      name:
+        str_replace:
+          template: $FUNCTION_CODE$FUNC_ID$vm$VM_ID$COMPONENT_NAME$COMPONENT_ID-boot-volume
+          params:
+            $FUNCTION_CODE: { get_param: function_code }
+            $FUNC_ID: { get_param: function_instance }
+            $vm: vm
+            $VM_ID: { get_param: vm_instance }
+            $COMPONENT_NAME: { get_param: component_name }
+            $COMPONENT_ID: { get_param: component_instance }
+      image: { get_param: bootimage }
+
+  server:
+    type: OS::Nova::Server
+    properties:
+      name:
+        str_replace:
+          template: $FUNCTION_CODE$FUNC_ID$vm$VM_ID$COMPONENT_NAME$COMPONENT_ID
+          params:
+            $FUNCTION_CODE: { get_param: function_code }
+            $FUNC_ID: { get_param: function_instance }
+            $vm: vm
+            $VM_ID: { get_param: vm_instance }
+            $COMPONENT_NAME: { get_param: component_name }
+            $COMPONENT_ID: { get_param: component_instance }
+      block_device_mapping:
+        - device_name: vda
+          volume_id: { get_resource: boot_volume }
+          delete_on_termination: false
+      flavor: m1.small
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: mgmt_port } 
+      metadata:
+        vel_domain: { get_param: vel_domain } 
+        vel_port: { get_param: vel_port }
+        vel_path: { get_param: vel_path }
+        vel_username: { get_param: vel_username }
+        vel_password: { get_param: vel_password }
+        vel_use_topic_urls: false
+      user_data_format: RAW
+
+outputs:
+  mgmt_ip_addr:
+    description: Management IP address
+    value: { get_attr: [mgmt_port, fixed_ips, 0, ip_address] }

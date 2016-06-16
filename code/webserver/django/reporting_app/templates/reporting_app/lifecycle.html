@@ -1,0 +1,78 @@
+{% load staticfiles %}
+
+<!-- Use the stylesheets from the admin app for now so that we get common   -->
+<!-- look-and-feel.                                                         -->
+<link rel="stylesheet" type="text/css"
+      href="{% static 'admin/css/base.css' %}" />
+<link rel="stylesheet" type="text/css" 
+      href="{% static 'admin/css/dashboard.css' %}" />
+
+<div id="header">
+  <div id="branding">
+    <h1><a href="{% url "index" %}">{{ title }}</a></h1>
+  </div>
+</div>
+
+<div id="content">
+  <p>This page lets you manage the lifecycle of the VNF itself.</p> 
+  
+  <h1>Prepare to Terminate</h1>
+  
+  <p>The "Send Terminate Request" button simulates the receipt of a "terminate"
+  signal from the OpenStack environment, with the application then going 
+  through the states:</p>
+  
+  <ul>
+    <li>Preparing to Terminate</li>
+    <li>Ready to Terminate</li>
+  </ul>
+  
+  <p>The VNF will send heartbeat events as its state changes to notify the
+  collector of its progress. The VNF will stay in the Preparing to Terminate 
+  state for the duration specified before entering the Ready to Terminate
+  state.</p>
+  
+  <h1>Activate</h1>
+  
+  <p>The "Reset Active" button simulates the receipt of an "activate"
+  signal from the OpenStack environment, with the application then going 
+  immediately to the Active state.</p>
+  
+  <p>The VNF will send a heartbeat event as its state changes to notify the
+  collector of its activation.</p>
+  
+  <h1>Notes</h1>
+  <ol>
+    <li>Note that the VNF will, in all states, continue to send events to
+        the Vendor Event Listener service.</li>
+    <li>Note that it is valid to activate the VNF when it is in the 
+        Preparing to Terminate state.</li>
+  </ol>
+  
+  <h1>Actions</h1>
+  <p>Events generated so far: {{ total_events }}</p>
+  
+  <form action="." method="post">
+    {% csrf_token %}
+    <table>
+      {{ lifecycle_form }}
+	    <tr>
+            <td>
+                <input type="submit" 
+                       value="Send Terminate Request" 
+                       name="terminate" />
+            </td>
+            <td>
+                <input type="submit" value="Reset Active" name="activate"/>
+            </td>
+	    </tr>
+    </table>
+    
+    <br>
+    <p>
+       <b>Return to <a href="{% url "index" %}">the main page</a>.</b>
+    </p>
+    
+  </form>
+
+</div>
