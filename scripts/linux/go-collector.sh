@@ -2,5 +2,5 @@
 
 python ../../code/collector/collector.py \
        --config ../../config/collector.conf \
-       --section windows \
+       --section default \
        --verbose
