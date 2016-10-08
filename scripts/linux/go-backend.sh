@@ -3,5 +3,5 @@
 
 python ../../code/backend/backend.py \
        --config ../../config/backend.conf \
-       --section windows \
+       --section default \
        --verbose
