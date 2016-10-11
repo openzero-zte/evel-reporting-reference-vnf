@@ -101,4 +101,4 @@ class PathDispatcher:
         logger.debug('Registering for {0} at {1}'.format(method, path))
         print('Registering for {0} at {1}'.format(method, path))
         self.pathmap[method.lower(), path] = function
-        return function
+
